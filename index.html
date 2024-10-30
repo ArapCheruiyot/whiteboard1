@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notepad App</title>
+     <style>
+        /* Basic styles */
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            height: 100vh;
+            background-color: #f9f9f9;
+            background-image: linear-gradient(white 1px, transparent 1px), 
+                              linear-gradient(90deg, white 1px, transparent 1px);
+            background-size: 20px 20px;
+            border: 20px solid transparent;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-image: url("https://th.bing.com/th/id/OIP.Hlg2Sa5i4RvYI1La_cWlugHaE8?w=282&h=188&c=7&r=0&o=5&dpr=1.3&pid=1.7") 30 round;
+        }
+
+        #app-container {
+            width: 35%;
+            max-width: 800px;
+            aspect-ratio: 1 / 1;
+            background-color: rgba(255, 255, 255, 0.5);
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            position: relative;
+        }
+
+        /* Style for the GIF */
+        #gif {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 200px;
+            height: auto;
+        }
+
+        #buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .right-buttons {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .outer-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: absolute;
+            top: 20%;
+            left: calc(34% + 30px);
+            transform: translateY(-50%);
+        }
+
+        button {
+            padding: 10px;
+        }
+
+        #main-content {
+            display: flex;
+            height: 100%;
+        }
+
+        #file-names {
+            width: 200px;
+            border-right: 1px solid black;
+            padding: 10px;
+            overflow-y: auto;
+        }
+
+        #file-names div {
+            padding: 5px;
+            cursor: pointer;
+        }
+
+        #file-names div:hover {
+            background-color: #ddd;
+        }
+
+        #typing-area {
+            flex-grow: 1;
+            padding: 10px;
+            margin-left: 10px;
+            height: 100%;
+            overflow-y: auto;
+            background-color: transparent;
+        }
+
+        #typing-area textarea {
+            width: 100%;
+            height: 80%;
+            border: none;
+            outline: none;
+            resize: none;
+            background-color: transparent;
+            color: blue;
+        }
+
+        /* Styles for iframes */
+        .iframe-container {
+            position: absolute;
+            display: none;
+            border: 1px solid #ccc;
+            z-index: 100; /* Ensure it is above other elements */
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <img id="gif" src="http://zeus.cooltext.com/images/54b/54b22ead83a8361d0214d68473954ffe955d0647.gif" alt="Decorative GIF">
+    
+    <div id="buttons">
+        <button id="new-file">New</button>
+        <button id="search">Search</button>
+        <button id="delete">Delete</button>
+        <input type="text" id="search-input" placeholder="Type to search..." style="display: none;">
+    </div>
+
+    <div id="main-content">
+        <div id="file-names">
+            <!-- File titles will be added here -->
+        </div>
+        <div id="typing-area">
+            <textarea id="text-input" placeholder="Start typing..."></textarea>
+        </div>
+    </div>
+
+    <!-- Iframe containers -->
+    <div id="iframe-prorate" class="iframe-container" style="top: 10%; left: 510px; width: 285px; height: 500px;">
+        <iframe src="https://arapcheruiyot.github.io/proratacal/" width="100%" height="100%" frameborder="0"></iframe>
+    </div>
+    <div id="iframe-offers" class="iframe-container" style="top: 10%; left: 510px; width: 350px; height: 500px;">
+        <iframe src="https://arapcheruiyot.github.io/offer-finder/" width="100%" height="100%" frameborder="0"></iframe>
+    </div>
+    <div id="iframe-clarity" class="iframe-container" style="top: 10%; left: 40px; width: 2000px; height: 900px;">
+        <iframe src="https://clarityafrica.multichoice.co.za/KomodoUI.UI" width="50%" height="50%" frameborder="0"></iframe>
+    </div>
+    <div id="iframe-genesys" class="iframe-container" style="top: 10%; left: 510px; width: 800px; height: 500px;">
+        <iframe src="https://login.mypurecloud.com/#/authenticate" width="100%" height="100%" frameborder="0"></iframe>
+    </div>
+</div>
+
+<div class="outer-buttons">
+    <button id="button1">Prorate Customer BILL</button>
+    <button id="button2">Offers Filter</button>
+    <button id="button3">Clarity</button>
+    <button id="button4">Genesys</button>
+    <button id="button5">TUMI</button>
+</div>
+
+<script>
+    // JavaScript to handle the functionality
+
+    let notes = [];
+    let currentNoteIndex = null;
+
+    document.getElementById('text-input').addEventListener('input', function (event) {
+        const text = event.target.value;
+
+        if (currentNoteIndex === null) {
+            // Typing new note
+            if (text.includes('\n')) {
+                let firstLine = text.split('\n')[0];
+                // Save first line as the title
+                notes.push({
+                    title: firstLine,
+                    content: text
+                });
+                updateFileList();
+                currentNoteIndex = notes.length - 1;
+            }
+        } else {
+            // Update the content of the current note
+            notes[currentNoteIndex].content = text;
+        }
+    });
+
+    document.getElementById('new-file').addEventListener('click', function () {
+        saveCurrentNote();
+        clearTypingArea();
+    });
+
+    document.getElementById('delete').addEventListener('click', function () {
+        if (currentNoteIndex !== null) {
+            notes.splice(currentNoteIndex, 1);
+            updateFileList();
+            clearTypingArea();
+        }
+    });
+
+    document.getElementById('search').addEventListener('click', function () {
+        const searchInput = document.getElementById('search-input');
+        searchInput.style.display = searchInput.style.display === 'none' ? 'inline-block' : 'none';
+        searchInput.value = ''; // Clear any previous search
+        searchInput.focus();
+        updateFileList(); // Reset the file list display
+    });
+
+    document.getElementById('search-input').addEventListener('input', function (event) {
+        const keyword = event.target.value.toLowerCase();
+        updateFileList(keyword);
+    });
+
+    function updateFileList(filter = '') {
+        const fileNamesDiv = document.getElementById('file-names');
+        fileNamesDiv.innerHTML = '';
+        notes.forEach((note, index) => {
+            if (note.title.toLowerCase().includes(filter)) {
+                const noteDiv = document.createElement('div');
+                noteDiv.textContent = note.title;
+                noteDiv.addEventListener('click', function () {
+                    loadNoteContent(index);
+                });
+                fileNamesDiv.appendChild(noteDiv);
+            }
+        });
+    }
+
+    function saveCurrentNote() {
+        const textInput = document.getElementById('text-input').value;
+        if (currentNoteIndex !== null && textInput.trim() !== '') {
+            notes[currentNoteIndex].content = textInput;
+        }
+    }
+
+    function clearTypingArea() {
+        document.getElementById('text-input').value = '';
+        currentNoteIndex = null;
+    }
+
+    function loadNoteContent(index) {
+        currentNoteIndex = index;
+        const note = notes[index];
+        document.getElementById('text-input').value = note.content;
+    }
+
+    // Handling button hover to show corresponding iframes
+    const buttons = {
+        button1: 'iframe-prorate',
+        button2: 'iframe-offers',
+        button3: 'iframe-clarity',
+        button4: 'iframe-genesys',
+        button5: 'iframe-tumi'
+    };
+
+    Object.keys(buttons).forEach(buttonId => {
+        const button = document.getElementById(buttonId);
+        const iframeId = buttons[buttonId];
+
+        button.addEventListener('mouseenter', () => {
+            document.querySelectorAll('.iframe-container').forEach(iframe => {
+                iframe.style.display = 'none'; // Hide all iframes
+            });
+            document.getElementById(iframeId).style.display = 'block'; // Show the corresponding iframe
+        });
+
+        button.addEventListener('mouseleave', () => {
+            document.getElementById(iframeId).style.display = 'none'; // Hide the iframe when mouse leaves
+        });
+
+        // Ensure iframe stays visible until mouse leaves its area
+        const iframeContainer = document.getElementById(iframeId);
+        iframeContainer.addEventListener('mouseenter', () => {
+            iframeContainer.style.display = 'block'; // Keep the iframe visible
+        });
+        iframeContainer.addEventListener('mouseleave', () => {
+            iframeContainer.style.display = 'none'; // Hide the iframe when mouse leaves
+        });
+    });
+</script>
+
+</body>
+</html>
